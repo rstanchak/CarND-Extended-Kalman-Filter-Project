@@ -2,6 +2,7 @@
 #define FusionEKF_H_
 
 #include "measurement_package.h"
+#include "MeasurementFunction.h"
 #include "Eigen/Dense"
 #include <vector>
 #include <string>
@@ -44,6 +45,11 @@ private:
   Eigen::MatrixXd R_radar_;
   Eigen::MatrixXd H_laser_;
   Eigen::MatrixXd Hj_;
+  RadarMeasurementFunction h_radar_;
+  double var_ax_;
+  double var_ay_;
+
+  bool UpdateJacobian(const Eigen::VectorXd& x_state);
 };
 
 #endif /* FusionEKF_H_ */
