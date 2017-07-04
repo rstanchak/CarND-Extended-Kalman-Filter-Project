@@ -6,17 +6,33 @@
 
 class MeasurementFunction {
 public:
+    virtual Eigen::VectorXd residual( const Eigen::VectorXd & z, const Eigen::VectorXd & x )
+	{
+		return z-evaluate(x);
+	}
     virtual Eigen::VectorXd evaluate( const Eigen::VectorXd & x ) = 0; // => z
     virtual const Eigen::MatrixXd& jacobian( const Eigen::VectorXd& x ) = 0;
 };
 
 class RadarMeasurementFunction : public MeasurementFunction {
+	// rho, phi, rho-dot
 private:
     Eigen::MatrixXd Hj_;
 
 public:
     RadarMeasurementFunction(void): Hj_(3,4) {
     }
+
+	double normalize_angle( double theta )
+	{
+		return atan2( sin(theta), cos(theta) );
+	}
+
+    Eigen::VectorXd residual( const Eigen::VectorXd & z, const Eigen::VectorXd & x ){
+		Eigen::VectorXd y = z-evaluate(x);
+		y[1] = normalize_angle(y[1]);
+		return y;
+	}
     Eigen::VectorXd evaluate( const Eigen::VectorXd & x ){
         double px, py, vx, vy;
         double rho;
@@ -33,10 +49,10 @@ public:
     } 
     const Eigen::MatrixXd& jacobian( const Eigen::VectorXd& x) {
         //recover state parameters
-        float px = x(0);
-        float py = x(1);
-        float vx = x(2);
-        float vy = x(3);
+        double px = x(0);
+        double py = x(1);
+        double vx = x(2);
+        double vy = x(3);
 
 
         //check division by zero
@@ -47,12 +63,13 @@ public:
         }
 
         //compute the Jacobian matrix
-        float rho2 = px*px+py+py;
-        float rho = sqrt(rho2);
+        double rho2 = px*px+py*py;
+        double rho = sqrt(rho2);
+		double rho3_2 = rho2*rho;
 
         Hj_ << px/rho, py/rho, 0, 0,
             -py/rho2, px/rho2, 0, 0,
-            py*(vx*py-vy*px)/pow(rho2,1.5), px*(vy*px-vx*py)/pow(rho2,1.5), px/rho, py/rho;
+            py*(vx*py-vy*px)/rho3_2, px*(vy*px-vx*py)/rho3_2, px/rho, py/rho;
         return Hj_;
     }
 };
