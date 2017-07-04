@@ -85,13 +85,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       */
       double rho = measurement_pack.raw_measurements_[0];
       double phi = measurement_pack.raw_measurements_[1];
-      double rho_dot = measurement_pack.raw_measurements_[2];
+      //double rho_dot = measurement_pack.raw_measurements_[2];
       x(0) = rho * cos(phi);
       x(1) = rho * sin(phi);
-      x(2) = rho_dot * cos(phi);
-      x(3) = rho_dot * sin(phi);
+      x(2) = 0;// rho_dot * cos(phi);
+      x(3) = 0;//rho_dot * sin(phi);
 
-      ekf_.Init(x, P, F, H_laser_, R_laser_, Q);
+      ekf_.Init(x, P, F, H_laser_, R_radar_, Q);
         
 
     }
@@ -143,7 +143,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-
     // Radar updates
     ekf_.R_ = R_radar_;
     ekf_.UpdateEKF( measurement_pack.raw_measurements_, h_radar_);
