@@ -1,10 +1,10 @@
 #ifndef KALMAN_FILTER_H_
 #define KALMAN_FILTER_H_
 #include "Eigen/Dense"
+#include "MeasurementFunction.h"
 
 class KalmanFilter {
-public:
-
+ public:
   // state vector
   Eigen::VectorXd x_;
 
@@ -62,8 +62,6 @@ public:
    * Updates the state by using Extended Kalman Filter equations
    * @param z The measurement at k+1
    */
-  void UpdateEKF(const Eigen::VectorXd &z);
-
+  void UpdateEKF(const Eigen::VectorXd &z, MeasurementFunction &h );
 };
-
 #endif /* KALMAN_FILTER_H_ */
