@@ -40,33 +40,57 @@ void KalmanFilter::Predict() {
  * update the state by using Kalman Filter equations
  */
 void KalmanFilter::Update(const VectorXd &z) {
+    std::cout<<"<Update>"<<std::endl;
+    std::cout<<"x_:"<<x_<<std::endl;
+    std::cout<<"P_:"<<P_<<std::endl;
+    std::cout<<"z:"<<z<<std::endl;
+    std::cout<<"H_:"<<H_<<std::endl;
+    std::cout<<"R_:"<<R_<<std::endl;
     // residual
     VectorXd y = z - H_ * x_;
+    std::cout<<"y:"<<y<<std::endl;
     // covariance
     MatrixXd S_inv = (R_ + H_ * P_ * H_.transpose()).inverse();
+    std::cout<<"S_inv:"<<S_inv<<std::endl;
     // kalman gain
     MatrixXd K = P_ * H_.transpose() * S_inv;
+    std::cout<<"K:"<<K<<std::endl;
     // state estimate
     x_ = x_ + K * y;
     // covariance estimate
     P_ = (MatrixXd::Identity(4,4) - K*H_)*P_;
+    std::cout<<"x_:"<<x_<<std::endl;
+    std::cout<<"P_:"<<P_<<std::endl;
+    std::cout<<"</Update>"<<std::endl;
 }
 
 /**
  * update the state by using Extended Kalman Filter equations
  */
 void KalmanFilter::UpdateEKF(const VectorXd &z,  MeasurementFunction & h) {
+    std::cout<<"<UpdateEKF>"<<std::endl;
+    std::cout<<"x_:"<<x_<<std::endl;
+    std::cout<<"P_:"<<P_<<std::endl;
     // jacobian 
     H_ = h.jacobian(x_);
+    std::cout<<"z:"<<z<<std::endl;
+    std::cout<<"H_:"<<H_<<std::endl;
+    std::cout<<"R_:"<<R_<<std::endl;
 
     // residual
-    VectorXd y = z - h.evaluate(x_);
+    VectorXd y = h.residual( z, x_ );
+    std::cout<<"y:"<<y<<std::endl;
     // covariance
-    MatrixXd S_inv = (R_ + H_ * P_ * H_.transpose()).inverse();
+    MatrixXd S = (R_ + H_ * P_ * H_.transpose());
+    std::cout<<"S:"<<S<<std::endl;
     // kalman gain
-    MatrixXd K = P_ * H_.transpose() * S_inv;
+    MatrixXd K = P_ * H_.transpose() * S.inverse();
+    std::cout<<"K:"<<K<<std::endl;
     // state estimate
     x_ = x_ + K * y;
     // covariance estimate
     P_ = (MatrixXd::Identity(4,4) - K*H_)*P_;
+    std::cout<<"x_:"<<x_<<std::endl;
+    std::cout<<"P_:"<<P_<<std::endl;
+    std::cout<<"</UpdateEKF>"<<std::endl;
 }
