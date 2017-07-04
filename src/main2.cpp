@@ -22,6 +22,9 @@ int main(int argc, char* argv[]) {
       MeasurementPackage meas_package;
       istringstream iss( sensor_measurement );
       long long timestamp;
+	  float rho=0;
+	  float theta=0;
+	  float rho_dot=0;
 
       // reads first element from the current line
       string sensor_type;
@@ -34,6 +37,9 @@ int main(int argc, char* argv[]) {
           float py;
           iss >> px;
           iss >> py;
+		  rho = sqrt(px*px+py*py);
+		  theta = atan2(py,px);
+		  rho_dot = 0;
           meas_package.raw_measurements_ << px, py;
           iss >> timestamp;
           meas_package.timestamp_ = timestamp;
@@ -41,13 +47,10 @@ int main(int argc, char* argv[]) {
 
           meas_package.sensor_type_ = MeasurementPackage::RADAR;
           meas_package.raw_measurements_ = VectorXd(3);
-          float ro;
-          float theta;
-          float ro_dot;
-          iss >> ro;
+          iss >> rho;
           iss >> theta;
-          iss >> ro_dot;
-          meas_package.raw_measurements_ << ro,theta, ro_dot;
+          iss >> rho_dot;
+          meas_package.raw_measurements_ << rho,theta, rho_dot;
           iss >> timestamp;
           meas_package.timestamp_ = timestamp;
       }
@@ -78,6 +81,9 @@ int main(int argc, char* argv[]) {
       double v1  = fusionEKF.ekf_.x_(2);
       double v2 = fusionEKF.ekf_.x_(3);
 
+	  std::cout<<"Z,"<<rho<<","<<theta<<","<<rho_dot<<","<<rho*cos(theta)<<","<<rho*sin(theta);
+	  std::cout<<",T,"<<sqrt(x_gt*x_gt+y_gt*y_gt)<<","<<atan2(y_gt, x_gt)<<","<<(vx_gt*x_gt + vy_gt*y_gt)/sqrt(x_gt*x_gt+y_gt*y_gt)<<","<<x_gt<<","<<y_gt;
+	  std::cout<<",X,"<<sqrt(p_x*p_x+p_y*p_y)<<","<<atan2(p_y, p_x)<<","<<(v1*p_x+v2*p_y)/sqrt(p_x*p_x+p_y*p_y)<<","<<p_x<<","<<p_y<<std::endl;
       estimate(0) = p_x;
       estimate(1) = p_y;
       estimate(2) = v1;
@@ -87,9 +93,6 @@ int main(int argc, char* argv[]) {
 
       VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
       std::cout<<"RMSE "<<RMSE<<std::endl;
-      sleep(1);
-
-
   }
 }
 
